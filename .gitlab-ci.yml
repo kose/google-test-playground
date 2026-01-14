@@ -3,6 +3,12 @@ stages:
 
 unit-test-job:
   stage: test
+  tags:
+    - E2E
+  variables:
+    HTTP_PROXY: http://10.255.254.151:8080
+    HTTPS_PROXY: http://10.255.254.151:8080
+    NO_PROXY: localhost,127.0.0.1,gitlab-server,gitlab
   # 作成したDockerfileをビルドして使うか、事前にビルドしてレジストリに置いたものを使います
   # ここでは、このリポジトリのDockerfileを使って動かす設定例です
   image: ubuntu:22.04
