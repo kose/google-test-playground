@@ -11,15 +11,21 @@ make -j$(sysctl -n hw.ncpu)
 
 # 2. テスト実行
 echo "Running tests..."
-set +e
 ./runUnitTests --gtest_output="xml:test_detail.xml"
 TEST_RESULT=$?
-set -e
 
 # 3. カバレッジ抽出
 echo "Step 3: Capturing coverage..."
-# LCOV 2.x 用のすべての無視フラグを定義
-LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,count,negative,category"
+
+# Ubuntu の lcov バージョンに合わせて柔軟に対応
+LCOV_VERSION=$(lcov --version | cut -d' ' -f3 | cut -d. -f1)
+
+if [ "$LCOV_VERSION" -ge "2" ]; then
+    LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,count,negative,category"
+else
+    # LCOV 1.x の場合はエラー無視オプションが少ない
+    LCOV_OPTS="--rc lcov_branch_coverage=1"
+fi
 
 lcov --capture --directory . --output-file coverage.info $LCOV_OPTS
 
@@ -53,9 +59,10 @@ uvx junit2html test_detail.xml test_detail.html
 
 echo "-------------------------------------------------------"
 echo "Done!"
-echo "Test Detail (HTML): $PWD/test_detail.html"
-echo "Coverage (HTML):    $PWD/coverage_html/index.html"
-echo "-------------------------------------------------------"
 
-open test_detail.html
-open coverage_html/index.html
+cd /app
+mkdir -p result
+rsync -auv build/test_detail.html result/
+rsync -auv build/coverage_html result/
+
+# end
