@@ -55,9 +55,7 @@ fi
 
 # 6. テスト結果のHTML変換 (uv)
 echo "Step 6: Generating Test Detail HTML Report..."
-echo "pwd: `pwd`"
-ls -alF /usr/local/bin
-/usr/local/bin/uvx junit2html test_detail.xml test_detail.html
+uvx junit2html test_detail.xml test_detail.html
 
 echo "-------------------------------------------------------"
 echo "Done!"
