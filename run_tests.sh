@@ -59,10 +59,11 @@ uvx junit2html test_detail.xml test_detail.html
 
 echo "-------------------------------------------------------"
 echo "Done!"
+echo "-------------------------------------------------------"
 
-cd /app
-mkdir -p result
-rsync -auv build/test_detail.html result/
-rsync -auv build/coverage_html result/
+# cd /app
+# mkdir -p result
+# rsync -auv build/test_detail.html result/
+# rsync -auv build/coverage_html result/
 
 # end
