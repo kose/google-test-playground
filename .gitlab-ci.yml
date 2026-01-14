@@ -1,0 +1,32 @@
+stages:
+  - test
+
+unit-test-job:
+  stage: test
+  # 作成したDockerfileをビルドして使うか、事前にビルドしてレジストリに置いたものを使います
+  # ここでは、このリポジトリのDockerfileを使って動かす設定例です
+  image: ubuntu:22.04
+  
+  before_script:
+    - apt-get update && apt-get install -y build-essential cmake lcov python3 python3-pip curl git
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH=$PATH:$HOME/.cargo/bin
+    # macOSとのビルド混在を防ぐため念のためクリア
+    - rm -rf build/
+
+  script:
+    # 実行権限を付与してスクリプトを実行
+    - chmod +x run_tests.sh
+    - ./run_tests.sh
+
+  # ここが重要：生成されたHTMLレポートをGitLab上でダウンロード・閲覧可能にする
+  artifacts:
+    when: always
+    paths:
+      - build/coverage_html/
+      - build/test_detail.xml
+      - build/test_detail.html
+    expire_in: 1 week
+    # GitLab Pagesなどで公開したい場合はさらに設定が可能
+    reports:
+      junit: build/test_detail.xml
