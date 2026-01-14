@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# エラーのとこで止まる
+# set -e
+
+# 1. ビルド
+mkdir -p build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+make -j$(sysctl -n hw.ncpu)
+
+# 2. テスト実行
+echo "Running tests..."
+set +e
+./runUnitTests --gtest_output="xml:test_detail.xml"
+TEST_RESULT=$?
+set -e
+
+# 3. カバレッジ抽出
+echo "Step 3: Capturing coverage..."
+# LCOV 2.x 用のすべての無視フラグを定義
+LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,count,negative,category"
+
+lcov --capture --directory . --output-file coverage.info $LCOV_OPTS
+
+# 4. フィルタリング (2ステップに分ける)
+echo "Step 4: Filtering coverage..."
+
+# 4-1. まず、src ディレクトリ直下のファイルだけを抽出
+lcov --extract coverage.info "*/src/*" \
+     --output-file coverage.src.info $LCOV_OPTS
+
+# 4-2. 次に、もし抽出結果に build 内のファイル（自動生成コード等）が混ざっていれば削除
+lcov --remove coverage.src.info "*/build/*" \
+     --output-file coverage.filtered.info $LCOV_OPTS
+
+# 5. HTML生成
+if [ -s coverage.filtered.info ]; then
+    echo "Step 5: Generating HTML reports..."
+    genhtml coverage.filtered.info \
+            --output-directory coverage_html \
+            --legend \
+            $LCOV_OPTS
+else
+    echo "ERROR: フィルタリング後のカバレッジデータが空です。"
+    echo "src フォルダ内のソースが正しく抽出されているか確認してください。"
+    exit 1
+fi
+
+# 6. テスト結果のHTML変換 (uv)
+echo "Step 6: Generating Test Detail HTML Report..."
+uvx junit2html test_detail.xml test_detail.html
+
+echo "-------------------------------------------------------"
+echo "Done!"
+echo "Test Detail (HTML): $PWD/test_detail.html"
+echo "Coverage (HTML):    $PWD/coverage_html/index.html"
+echo "-------------------------------------------------------"
+
+open test_detail.html
+open coverage_html/index.html
