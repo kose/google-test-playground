@@ -18,9 +18,9 @@ unit-test-job:
   before_script:
     - apt-get update && apt-get install -y build-essential cmake lcov python3 python3-pip curl git
     - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH=$PATH:$HOME/.cargo/bin
-    # macOSとのビルド混在を防ぐため念のためクリア
-    - rm -rf build/
+    - export PATH="$HOME/.local/bin:$PATH"
+    # 確認用：パスが通ったかチェック
+    - uv --version
 
   script:
     # 実行権限を付与してスクリプトを実行
