@@ -17,8 +17,8 @@ docker compose up
 
 これで結果がカレントディレクトリに出来上がるので
 
-- ./result/test_detail.html 
-- ./result/coverage_html/index.html 
+- ./build/test_detail.html
+- ./build/coverage_html/index.html 
 
 を開きます。
 
