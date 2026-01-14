@@ -1,0 +1,17 @@
+services:
+  google-test:
+    container_name: google-test
+    build: .
+    # ホストのカレントディレクトリをコンテナの /app にマウント
+    # これにより、コンテナ内で生成された build フォルダが直接ローカルに現れます
+    volumes:
+      - .:/app
+    # コンテナ実行時のコマンドを指定
+    command: ./run_tests.sh
+    #
+    # debug
+    # tty: true
+    # stdin_open: true
+    # command: bash
+
+# end
