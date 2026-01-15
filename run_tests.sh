@@ -53,8 +53,8 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 if [ -s coverage.filtered.info ]; then
     echo "Step 5: Generating HTML reports..."
     genhtml coverage.filtered.info \
-	    --output-directory ${SCRIPT_DIR}/build/coverage_html \
-	    --ignore-errors source,mismatch
+	    --output-directory ${SCRIPT_DIR}/../build/coverage_html
+#	    --ignore-errors source,mismatch
 
 else
     echo "ERROR: フィルタリング後のカバレッジデータが空です。"

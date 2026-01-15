@@ -41,7 +41,7 @@ jobs:
           path: |
             build/test_detail.html
             build/test_detail.xml
-            **/coverage_html/
+            build/coverage_html/
           # フォルダが存在しない場合でもエラーにせず、あるものだけ固める設定
           if-no-files-found: warn
           retention-days: 7          
