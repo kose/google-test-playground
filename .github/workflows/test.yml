@@ -36,5 +36,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: build/
+          name: test-and-coverage-results
+          # 必要なファイルだけを個別に指定、またはワイルドカードを活用
+          path: |
+            build/test_detail.html
+            build/test_detail.xml
+            build/coverage_html/
+          # フォルダが存在しない場合でもエラーにせず、あるものだけ固める設定
+          if-no-files-found: warn
+          retention-days: 7          
