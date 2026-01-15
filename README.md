@@ -22,5 +22,16 @@ docker compose up
 
 を開きます。
 
+#### docker image 消去（後始末）
+
+```
+docker compose --rmi all
+```
+
 ## GitLab CI/CD
 
+.gitlab-ci.yml に動作レシピを書いておけばコミット時に実行される。
+
+### GitHub Actions
+
+.github/workflows/test.yml に動作レシピを書いておけばコミット時に実行される。

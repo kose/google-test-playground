@@ -1,0 +1,47 @@
+name: Unit Test
+
+on:
+  push:
+    branches: [main, feature/cicd]
+
+jobs:
+  unit-test:
+    # コンテナではなく、GitHub標準のUbuntu環境をそのまま使う
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. uv をインストール（ここだけでOK、curlなどは不要）
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          # プロジェクトファイルがない場合はキャッシュ機能をオフにするとエラーが出ません
+          enable-cache: false
+
+      # 2. 必要なシステムライブラリ（cmakeなど）だけ入れる
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential cmake lcov
+
+      # 3. テスト実行（uvx を使っているので、事前の uv sync は不要）
+      - name: Run tests
+        run: |
+          chmod +x run_tests.sh
+          ./run_tests.sh    
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-and-coverage-results
+          # 必要なファイルだけを個別に指定、またはワイルドカードを活用
+          path: |
+            build/test_detail.html
+            build/test_detail.xml
+            **/coverage_html/
+          # フォルダが存在しない場合でもエラーにせず、あるものだけ固める設定
+          if-no-files-found: warn
+          retention-days: 7          

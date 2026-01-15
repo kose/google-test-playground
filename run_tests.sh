@@ -17,16 +17,23 @@ TEST_RESULT=$?
 # 3. カバレッジ抽出
 echo "Step 3: Capturing coverage..."
 
-# Ubuntu の lcov バージョンに合わせて柔軟に対応
-LCOV_VERSION=$(lcov --version | cut -d' ' -f3 | cut -d. -f1)
+# 「数字とドット」以外の文字を削除してから、最初のドットまでを切り出す
+LCOV_VERSION=$(lcov --version | grep -oE '[0-9]+(\.[0-9]+)+' | cut -d. -f1)
 
-if [ "$LCOV_VERSION" -ge "2" ]; then
-    LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,count,negative,category"
+# デバッグ用に変数の中身を表示しておくと安心です
+echo "Detected LCOV version: $LCOV_VERSION"
+
+# LCOV 2.x 用のオプションを整理
+if [ -n "$LCOV_VERSION" ] && [ "$LCOV_VERSION" -ge 2 ]; then
+    # 'category' を削除し、'gcov' と 'source' を追加して警告を完全に黙らせる
+    # また、一部の環境で弾かれる可能性があるキーワードを除外した安定版セット
+    LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,mismatch,gcov,source"
 else
-    # LCOV 1.x の場合はエラー無視オプションが少ない
     LCOV_OPTS="--rc lcov_branch_coverage=1"
 fi
 
+# フィルタリング（lcov --extract / --remove）時にも --ignore-errors を付ける
+# これをしないと、フィルタリング中にエラーが出て止まることがあります
 lcov --capture --directory . --output-file coverage.info $LCOV_OPTS
 
 # 4. フィルタリング (2ステップに分ける)
@@ -40,13 +47,15 @@ lcov --extract coverage.info "*/src/*" \
 lcov --remove coverage.src.info "*/build/*" \
      --output-file coverage.filtered.info $LCOV_OPTS
 
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
 # 5. HTML生成
 if [ -s coverage.filtered.info ]; then
     echo "Step 5: Generating HTML reports..."
     genhtml coverage.filtered.info \
-            --output-directory coverage_html \
-            --legend \
-            $LCOV_OPTS
+	    --output-directory ${SCRIPT_DIR}/build/coverage_html \
+	    --ignore-errors source,mismatch
+
 else
     echo "ERROR: フィルタリング後のカバレッジデータが空です。"
     echo "src フォルダ内のソースが正しく抽出されているか確認してください。"
