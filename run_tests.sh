@@ -23,14 +23,17 @@ LCOV_VERSION=$(lcov --version | grep -oE '[0-9]+(\.[0-9]+)+' | cut -d. -f1)
 # デバッグ用に変数の中身を表示しておくと安心です
 echo "Detected LCOV version: $LCOV_VERSION"
 
+# LCOV 2.x 用のオプションを整理
 if [ -n "$LCOV_VERSION" ] && [ "$LCOV_VERSION" -ge 2 ]; then
-    # LCOV 2.x の設定
-    LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,count,negative,category,mismatch"
+    # 'category' を削除し、'gcov' と 'source' を追加して警告を完全に黙らせる
+    # また、一部の環境で弾かれる可能性があるキーワードを除外した安定版セット
+    LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,mismatch,gcov,source"
 else
-    # LCOV 1.x の設定
     LCOV_OPTS="--rc lcov_branch_coverage=1"
 fi
 
+# フィルタリング（lcov --extract / --remove）時にも --ignore-errors を付ける
+# これをしないと、フィルタリング中にエラーが出て止まることがあります
 lcov --capture --directory . --output-file coverage.info $LCOV_OPTS
 
 # 4. フィルタリング (2ステップに分ける)
