@@ -52,7 +52,6 @@ if [ -s coverage.filtered.info ]; then
     echo "Step 5: Generating HTML reports..."
     genhtml coverage.filtered.info \
 	    --output-directory coverage_html
-#	    --ignore-errors source,mismatch
 
 else
     echo "ERROR: フィルタリング後のカバレッジデータが空です。"

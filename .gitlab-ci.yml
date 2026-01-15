@@ -1,3 +1,11 @@
+# 環境変数設定をグローバルに
+variables:
+  HTTP_PROXY: http://10.255.254.151:8080
+  HTTPS_PROXY: http://10.255.254.151:8080
+  http_proxy: http://10.255.254.151:8080
+  https_proxy: http://10.255.254.151:8080
+  NO_PROXY: localhost,127.0.0.1,gitlab-server,gitlab
+
 stages:
   - test
 
@@ -5,12 +13,6 @@ unit-test-job:
   stage: test
   tags:
     - E2E
-  variables:
-    HTTP_PROXY: http://10.255.254.151:8080
-    HTTPS_PROXY: http://10.255.254.151:8080
-    http_proxy: http://10.255.254.151:8080
-    https_proxy: http://10.255.254.151:8080
-    NO_PROXY: localhost,127.0.0.1,gitlab-server,gitlab
 
   image: ubuntu:22.04
   
@@ -22,7 +24,7 @@ unit-test-job:
     - uv --version
 
   script:
-      - chmod +x run_tests.sh
+    - chmod +x run_tests.sh
     - ./run_tests.sh
 
   # 生成されたHTMLレポートをGitLab上でダウンロード・閲覧可能にする
