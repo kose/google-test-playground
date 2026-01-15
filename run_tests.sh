@@ -51,9 +51,9 @@ lcov --remove coverage.src.info "*/build/*" \
 if [ -s coverage.filtered.info ]; then
     echo "Step 5: Generating HTML reports..."
     genhtml coverage.filtered.info \
-            --output-directory coverage_html \
-            --legend \
-            $LCOV_OPTS
+	    --output-directory build/coverage_html \
+	    --ignore-errors source,mismatch
+
 else
     echo "ERROR: フィルタリング後のカバレッジデータが空です。"
     echo "src フォルダ内のソースが正しく抽出されているか確認してください。"
