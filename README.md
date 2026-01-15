@@ -7,9 +7,7 @@
 
 ## 実行
 
-- http://172.18.28.61/gitlab/docker/google-test-playground
-
-からソースコードをダウンロード。（ユーザ登録していないとgit cloneできない）
+git cloneして
 
 ```
 docker compose up
