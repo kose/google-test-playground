@@ -47,13 +47,11 @@ lcov --extract coverage.info "*/src/*" \
 lcov --remove coverage.src.info "*/build/*" \
      --output-file coverage.filtered.info $LCOV_OPTS
 
-SCRIPT_DIR=$(cd $(dirname $0); pwd)
-
 # 5. HTML生成
 if [ -s coverage.filtered.info ]; then
     echo "Step 5: Generating HTML reports..."
     genhtml coverage.filtered.info \
-	    --output-directory ${SCRIPT_DIR}/../build/coverage_html
+	    --output-directory coverage_html
 #	    --ignore-errors source,mismatch
 
 else
