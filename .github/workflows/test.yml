@@ -2,32 +2,29 @@ name: Unit Test
 
 on:
   push:
-    # 以前設定した「特定のブランチのみ実行」のルールを適用
-    branches:
-      - main
-      - 'feature/**'
+    branches: [main, feature/cicd]
 
 jobs:
-  unit-test-job:
-    # GitLabの tags: E2E に相当するセルフホストランナーがいれば指定
-    # 一般的なクラウドランナーなら ubuntu-latest でOK
+  unit-test:
+    # コンテナではなく、GitHub標準のUbuntu環境をそのまま使う
     runs-on: ubuntu-latest
-
-    container:
-      image: ubuntu:22.04
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # uv をセットアップ（コンテナより圧倒的に速い）
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      # Pythonと依存関係をインストール（キャッシュが効く）
       - name: Install dependencies
         run: |
-          apt-get update && apt-get install -y build-essential cmake lcov python3 python3-pip curl git
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Check uv version
-        run: uv --version
+          # apt-get で必要なシステムライブラリだけ入れる
+          sudo apt-get update && sudo apt-get install -y build-essential cmake lcov
+          uv sync  # uv を使っているならこれが最速
 
       - name: Run tests
         run: |
@@ -38,17 +35,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-and-tests
-          path: |
-            build/coverage_html/
-            build/test_detail.html
-          retention-days: 7
-
-      # JUnit形式のレポートをGitHubのUI上で見やすくする場合（オプション）
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Unit Test Results
-          path: build/test_detail.xml
-          reporter: java-junit
+          name: test-results
+          path: build/
