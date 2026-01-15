@@ -13,23 +13,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # uv をセットアップ（コンテナより圧倒的に速い）
-      - name: Install uv
+      # 1. uv をインストール（ここだけでOK、curlなどは不要）
+      - name: Setup uv
         uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
+          # プロジェクトファイルがない場合はキャッシュ機能をオフにするとエラーが出ません
+          enable-cache: false
 
-      # Pythonと依存関係をインストール（キャッシュが効く）
-      - name: Install dependencies
+      # 2. 必要なシステムライブラリ（cmakeなど）だけ入れる
+      - name: Install system dependencies
         run: |
-          # apt-get で必要なシステムライブラリだけ入れる
           sudo apt-get update && sudo apt-get install -y build-essential cmake lcov
-          uv sync  # uv を使っているならこれが最速
 
+      # 3. テスト実行（uvx を使っているので、事前の uv sync は不要）
       - name: Run tests
         run: |
           chmod +x run_tests.sh
-          ./run_tests.sh
+          ./run_tests.sh    
 
       - name: Upload artifacts
         if: always()
