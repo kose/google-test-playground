@@ -17,13 +17,17 @@ TEST_RESULT=$?
 # 3. カバレッジ抽出
 echo "Step 3: Capturing coverage..."
 
-# Ubuntu の lcov バージョンに合わせて柔軟に対応
-LCOV_VERSION=$(lcov --version | cut -d' ' -f3 | cut -d. -f1)
+# 「数字とドット」以外の文字を削除してから、最初のドットまでを切り出す
+LCOV_VERSION=$(lcov --version | grep -oE '[0-9]+(\.[0-9]+)+' | cut -d. -f1)
 
-if [ "$LCOV_VERSION" -ge "2" ]; then
-    LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,count,negative,category"
+# デバッグ用に変数の中身を表示しておくと安心です
+echo "Detected LCOV version: $LCOV_VERSION"
+
+if [ -n "$LCOV_VERSION" ] && [ "$LCOV_VERSION" -ge 2 ]; then
+    # LCOV 2.x の設定
+    LCOV_OPTS="--ignore-errors format,inconsistent,unsupported,unused,count,negative,category,mismatch"
 else
-    # LCOV 1.x の場合はエラー無視オプションが少ない
+    # LCOV 1.x の設定
     LCOV_OPTS="--rc lcov_branch_coverage=1"
 fi
 
