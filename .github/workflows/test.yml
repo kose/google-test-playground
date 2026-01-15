@@ -1,0 +1,54 @@
+name: Unit Test
+
+on:
+  push:
+    # 以前設定した「特定のブランチのみ実行」のルールを適用
+    branches:
+      - main
+      - 'feature/**'
+
+jobs:
+  unit-test-job:
+    # GitLabの tags: E2E に相当するセルフホストランナーがいれば指定
+    # 一般的なクラウドランナーなら ubuntu-latest でOK
+    runs-on: ubuntu-latest
+
+    container:
+      image: ubuntu:22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y build-essential cmake lcov python3 python3-pip curl git
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Check uv version
+        run: uv --version
+
+      - name: Run tests
+        run: |
+          chmod +x run_tests.sh
+          ./run_tests.sh
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-and-tests
+          path: |
+            build/coverage_html/
+            build/test_detail.html
+          retention-days: 7
+
+      # JUnit形式のレポートをGitHubのUI上で見やすくする場合（オプション）
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Test Results
+          path: build/test_detail.xml
+          reporter: java-junit
